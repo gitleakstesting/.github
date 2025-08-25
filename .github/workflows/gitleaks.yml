@@ -14,14 +14,26 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout target repository
-      - name: Checkout repository
+      # 1️⃣ Checkout the target repository
+      - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
 
-      # 2️⃣ Run Gitleaks using centralized config
+      # 2️⃣ Checkout centralized .github repo to get gitleaks.toml
+      - name: Checkout centralized Gitleaks repo
+        uses: actions/checkout@v4
+        with:
+          repository: gitleakstesting/.github
+          path: centralized-gitleaks
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3️⃣ Copy the Gitleaks config into the target repo
+      - name: Copy Gitleaks config
+        run: cp centralized-gitleaks/gitleaks.toml ./gitleaks.toml
+
+      # 4️⃣ Run Gitleaks scan
       - name: Run Gitleaks
         id: gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -35,14 +47,14 @@ jobs:
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
-      # 3️⃣ Upload SARIF report
+      # 5️⃣ Upload SARIF report
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report
           path: results.sarif
 
-      # 4️⃣ Fail job if leaks found
+      # 6️⃣ Fail the job if leaks are found
       - name: Fail on leaks
         if: ${{ steps.gitleaks.outcome == 'failure' }}
         run: exit 1
