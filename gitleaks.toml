@@ -1,3 +1,7 @@
+# ==========================
+# Secret Detection Rules
+# ==========================
+
 [[rules]]
 id = "AWSAccessKeyID"
 description = "AWS Access Key ID"
@@ -7,6 +11,121 @@ tags = ["aws", "key"]
 [[rules]]
 id = "AWSSecretAccessKey"
 description = "AWS Secret Access Key"
-regex = "(?i)aws(.{0,20})?['\"][0-9a-zA-Z/+=]{40}['\"]|rJalsXUtnGEMI/K7MDENG/bPxRfiCYEXAMPLERFAL"
+regex = "(?i)aws(.{0,20})?['\"][0-9a-zA-Z/+=]{40}['\"]"
 tags = ["aws", "secret"]
+
+[[rules]]
+id = "GoogleAPIKey"
+description = "Google API Key"
+regex = "AIza[0-9A-Za-z\\-_]{35}"
+tags = ["gcp", "api", "key"]
+
+[[rules]]
+id = "GoogleOAuthClientID"
+description = "Google OAuth Client ID"
+regex = "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com"
+tags = ["gcp", "oauth"]
+
+[[rules]]
+id = "GoogleOAuthClientSecret"
+description = "Google OAuth Client Secret"
+regex = "[0-9A-Za-z-_]{24}"
+tags = ["gcp", "oauth"]
+
+[[rules]]
+id = "AzureStorageKey"
+description = "Azure Storage Account Key"
+regex = "AccountKey=[0-9A-Za-z+/=]{88}"
+tags = ["azure", "storage"]
+
+[[rules]]
+id = "AzureSASToken"
+description = "Azure Shared Access Signature (SAS) Token"
+regex = "\\?sv=[^&]+&ss=[^&]+&srt=[^&]+"
+tags = ["azure", "sas", "token"]
+
+[[rules]]
+id = "GitHubToken"
+description = "GitHub Personal Access Token"
+regex = "ghp_[0-9A-Za-z]{36}|gho_[0-9A-Za-z]{36}"
+tags = ["github", "token"]
+
+[[rules]]
+id = "GitLabToken"
+description = "GitLab Personal Access Token"
+regex = "glpat-[0-9A-Za-z\\-_]{20}"
+tags = ["gitlab", "token"]
+
+[[rules]]
+id = "SlackToken"
+description = "Slack Token"
+regex = "xox[baprs]-[0-9A-Za-z-]{10,48}"
+tags = ["slack", "token"]
+
+[[rules]]
+id = "StripeSecretKey"
+description = "Stripe Secret Key"
+regex = "sk_live_[0-9a-zA-Z]{24}"
+tags = ["stripe", "secret"]
+
+[[rules]]
+id = "StripePublishableKey"
+description = "Stripe Publishable Key"
+regex = "pk_live_[0-9a-zA-Z]{24}"
+tags = ["stripe", "public"]
+
+[[rules]]
+id = "TwilioAccountSID"
+description = "Twilio Account SID"
+regex = "AC[0-9a-f]{32}"
+tags = ["twilio", "sid"]
+
+[[rules]]
+id = "TwilioAuthToken"
+description = "Twilio Auth Token"
+regex = "[0-9a-f]{32}"
+tags = ["twilio", "auth"]
+
+[[rules]]
+id = "FacebookAccessToken"
+description = "Facebook Access Token"
+regex = "EAACEdEose0cBA[0-9A-Za-z]+"
+tags = ["facebook", "access_token"]
+
+[[rules]]
+id = "JWT"
+description = "JSON Web Token (JWT)"
+regex = "eyJ[A-Za-z0-9-_=]+\\.eyJ[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*"
+tags = ["jwt", "token"]
+
+[[rules]]
+id = "SSHPrivateKey"
+description = "SSH Private Key"
+regex = "-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----"
+tags = ["ssh", "private_key"]
+
+[[rules]]
+id = "PGPPrivateKey"
+description = "PGP Private Key"
+regex = "-----BEGIN PGP PRIVATE KEY BLOCK-----"
+tags = ["pgp", "private_key"]
+
+[[rules]]
+id = "GenericAPIKey"
+description = "Generic API Key"
+regex = "(?i)(api[_-]?key|secret)[\\s:=]+['\\\"][0-9A-Za-z\\-_=]{16,64}['\\\"]"
+tags = ["generic", "api", "key"]
+
+[[rules]]
+id = "GenericPassword"
+description = "Hardcoded Password"
+regex = "(?i)(password|passwd|pwd)[\\s:=]+['\\\"][^'\\\"]{4,}['\\\"]"
+tags = ["generic", "password"]
+
+[[rules]]
+id = "CreditCard"
+description = "Credit Card Number (Visa, MasterCard, AmEx)"
+regex = "(4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})"
+tags = ["pii", "financial", "creditcard"]
+
 
