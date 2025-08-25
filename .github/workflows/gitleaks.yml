@@ -1,10 +1,9 @@
-name: gitleaks
+name: Secret Scan
 
 on:
-  workflow_call:   # Allows other repos to call this workflow
-  workflow_dispatch: # Allows manual run
-  schedule:
-    - cron: "0 4 * * *" # Optional: run daily at 4 AM UTC
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
   scan:
