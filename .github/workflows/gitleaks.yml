@@ -18,7 +18,7 @@ jobs:
       - name: Download Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif
+          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
 
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
