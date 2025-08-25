@@ -1,5 +1,4 @@
 name: Reusable Gitleaks Scan
-
 on:
   workflow_call:
     inputs:
@@ -7,48 +6,28 @@ on:
         required: false
         type: string
         default: ".gitleaks.toml"
-
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # ✅ Install latest gitleaks safely
-      - name: Install Gitleaks
-        run: |
-          VERSION=$(curl -s https://api.github.com/repos/zricethezav/gitleaks/releases/latest | jq -r .tag_name)
-          FILE="gitleaks_${VERSION#v}_linux_x64.tar.gz"
-          URL="https://github.com/zricethezav/gitleaks/releases/download/${VERSION}/${FILE}"
-
-          echo "Downloading $URL"
-          curl -sSL -o $FILE $URL
-
-          echo "Extracting $FILE"
-          tar -xzf $FILE
-
-          sudo mv gitleaks /usr/local/bin/
-          gitleaks version
-
-      # ✅ Run gitleaks scan
-      - name: Run Gitleaks Scan
-        run: |
-          gitleaks detect \
-            --source . \
-            --config "${{ inputs.config_path }}" \
-            --report-format sarif \
-            --report-path results.sarif \
-            --exit-code 1
-
+      - name: Download Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.4
+        with:
+          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
-
-      # ✅ Upload SARIF results as artifact
+           # Step 3: Upload scan report as artifact
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results   # must not have dots in name
-          path: results.sarif
+          name: gitleaks-results
+          path: gitleaks-results.sarif
+         
+
+
+
+
+
