@@ -18,7 +18,7 @@ jobs:
         uses: zricethezav/gitleaks-action@v2
         with:
           scan-path: .
-          config-path: .gitleaks.toml      # <--- use correct path
+          config-path: .github/.gitleaks.toml      # <--- use correct path
           report-path: gitleaks-report.json
           report-format: sarif
         env:
