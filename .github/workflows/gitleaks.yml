@@ -1,8 +1,8 @@
 name: gitleaks
 
 on:
-  workflow_call:   # <-- required
-  workflow_dispatch:
+  workflow_call: {}   # <-- required
+  workflow_dispatch: {}
 
 jobs:
   scan:
