@@ -14,42 +14,36 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout target repository
+      # 1️⃣ Checkout target repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
 
-      - name: Copy centralized Gitleaks config
-        run: cp ${{ github.workspace }}/.github/gitleaks.toml ./
-
-      - name: Install Gitleaks
-        run: |
-          GITLEAKS_VERSION=8.24.3
-          curl -sSL -o gitleaks.tar.gz https://github.com/zricethezav/gitleaks/releases/download/v$GITLEAKS_VERSION/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
-          tar -xzf gitleaks.tar.gz
-          chmod +x gitleaks
-          sudo mv gitleaks /usr/local/bin/
-          gitleaks version
-
+      # 2️⃣ Run Gitleaks using the .github config in the target repo
       - name: Run Gitleaks
         id: gitleaks
-        run: |
-          gitleaks detect \
-            --source ${{ inputs.scan-path }} \
-            --config ./gitleaks.toml \
-            --report-path results.sarif \
-            --report-format sarif \
-            --redact
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect \
+                --source ${{ inputs.scan-path }} \
+                --config ./.github/gitleaks.toml \
+                --report-format sarif \
+                --report-path gitleaks-report.sarif \
+                --redact
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # 3️⃣ Upload SARIF report
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report
-          path: results.sarif
+          path: gitleaks-report.sarif
 
+      # 4️⃣ Fail job if leaks found
       - name: Fail on leaks
         if: ${{ steps.gitleaks.outcome == 'failure' }}
         run: exit 1
