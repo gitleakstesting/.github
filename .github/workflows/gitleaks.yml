@@ -37,7 +37,7 @@ jobs:
         run: |
           gitleaks detect \
             --source ${{ inputs.scan-path }} \
-            --config ./gitleaks.toml \
+            --config .github/gitleaks.toml \
             --report-path results.sarif \
             --report-format sarif \
             --redact
