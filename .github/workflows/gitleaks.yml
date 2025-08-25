@@ -25,4 +25,34 @@ jobs:
       - name: Install Gitleaks
         run: |
           GITLEAKS_VERSION=8.24.3
-          curl -sSL -o gitleaks.tar.gz https://github.com/zricethezav/gitleaks/releases/download/v$GITL
+          curl -sSL -o gitleaks.tar.gz https://github.com/zricethezav/gitleaks/releases/download/v$GITLEAKS_VERSION/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+          tar -xzf gitleaks.tar.gz
+          chmod +x gitleaks
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
+
+      # 3️⃣ Run Gitleaks scan
+      - name: Run Gitleaks
+        id: gitleaks
+        run: |
+          gitleaks detect \
+            --source ${{ inputs.scan-path }} \
+            --recursive \
+            --config ./gitleaks.toml \
+            --report-path results.sarif \
+            --report-format sarif \
+            --redact
+        env:
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+
+      # 4️⃣ Upload SARIF report
+      - name: Upload Gitleaks Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: results.sarif
+
+      # 5️⃣ Fail job if leaks found
+      - name: Fail on leaks
+        if: ${{ steps.gitleaks.outcome == 'failure' }}
+        run: exit 1
