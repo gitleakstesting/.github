@@ -15,17 +15,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Gitleaks
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/${VERSION}/gitleaks_${VERSION#v}_linux_x64.tar.gz | tar -xz
+          sudo mv gitleaks /usr/local/bin/
+
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
-        with:
-          args: detect \
+        run: |
+          gitleaks detect \
             --source . \
-            --config=${{ inputs.config_path }} \
-            --report-format=sarif \
-            --report-path=gitleaks-results.sarif \
+            --config ${{ inputs.config_path }} \
+            --report-format sarif \
+            --report-path gitleaks-results.sarif \
             --redact \
             --no-git \
-            --exit-code=1
+            --exit-code 1
         env:
           GITLEAKS_LICENSE:  "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
