@@ -18,8 +18,11 @@ jobs:
       - name: Install Gitleaks
         run: |
           VERSION=$(curl -s https://api.github.com/repos/zricethezav/gitleaks/releases/latest | jq -r .tag_name)
-          curl -sSL https://github.com/zricethezav/gitleaks/releases/download/$VERSION/gitleaks_${VERSION#v}_linux_x64.tar.gz \
-          | tar -xz -C /usr/local/bin gitleaks
+          FILE="gitleaks_${VERSION#v}_linux_x64.tar.gz"
+          curl -sSL -o $FILE https://github.com/zricethezav/gitleaks/releases/download/$VERSION/$FILE
+          tar -xzf $FILE
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
 
       - name: Run Gitleaks
         run: |
