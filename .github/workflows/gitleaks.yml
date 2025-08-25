@@ -18,9 +18,13 @@ jobs:
         uses: zricethezav/gitleaks-action@v2
         with:
           scan-path: .
-          config-path: .github/.gitleaks.toml      # <--- use correct path
-          report-path: gitleaks-report.json
-          report-format: sarif
+          config-path: gitleaks.toml    # your custom rules
+          format: sarif
+          output-path: gitleaks-results.sarif
+          verbose: true
+          no-git: true                   # scan all files, not just git commits
+          redact: true
+          exit-code: 2
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
