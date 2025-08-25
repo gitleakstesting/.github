@@ -1,31 +1,35 @@
-name: gitleaks
+name: gitleaks-centralized
 
 on:
-  workflow_call: {}   # allows other repos to call
-  workflow_dispatch: {} # allows manual run
+  workflow_call: {}      # allows other repos to call this workflow
+  workflow_dispatch: {}  # allows manual run from central repo
 
 jobs:
   scan:
     name: Run Gitleaks Scan
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout the target repository fully, including history and submodules
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0      # full Git history
+          submodules: true    # include submodules if any
 
+      # 2️⃣ Run Gitleaks scan
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --source . \
-                      --config .github/.gitleaks.toml \
-                      --report-path gitleaks-report.json \
-                      --report-format sarif \
-                      --redact \
-                      --no-git
+                       --recursive \
+                       --config .github/.gitleaks.toml \
+                       --report-path gitleaks-report.json \
+                       --report-format sarif \
+                       --redact
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
+      # 3️⃣ Upload scan report as artifact
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
         with:
