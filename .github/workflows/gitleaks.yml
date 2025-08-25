@@ -18,20 +18,21 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          args: detect --source . \
-                      --config ${{ inputs.config_path }} \
-                      --report-format sarif \
-                      --report-path gitleaks-results.sarif \
-                      --redact \
-                      --no-git \
-                      --exit-code 1
+          args: detect \
+            --source . \
+            --config=${{ inputs.config_path }} \
+            --report-format=sarif \
+            --report-path=gitleaks-results.sarif \
+            --redact \
+            --no-git \
+            --exit-code=1
         env:
-          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+          GITLEAKS_LICENSE:  "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
 
       - name: Upload SARIF report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-           name: gitleaks-results   # ✅ no dots in artifact name
-           path: gitleaks-results.sarif
+          name: gitleaks-results
+          path: gitleaks-results.sarif
