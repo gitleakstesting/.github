@@ -1,9 +1,8 @@
-name: Secret Scan
+name: gitleaks
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_call:   # <-- required
+  workflow_dispatch:
 
 jobs:
   scan:
