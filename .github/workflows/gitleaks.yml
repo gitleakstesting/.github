@@ -21,7 +21,7 @@ jobs:
         with:
           args: detect --source . --config .gitleaks.toml --report-path gitleaks-report.json
         env:
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
