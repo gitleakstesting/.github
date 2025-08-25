@@ -13,13 +13,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # fetch full history for complete scanning
+          fetch-depth: 0
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
           scan-path: .
-          config-path: .github/.gitleaks.toml
+          config-path: .gitleaks.toml      # <--- use correct path
           report-path: gitleaks-report.json
           report-format: sarif
         env:
