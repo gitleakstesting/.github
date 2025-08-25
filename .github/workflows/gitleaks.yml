@@ -14,31 +14,35 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout target repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
 
+      # 2️⃣ Run Gitleaks using centralized config
       - name: Run Gitleaks
         id: gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        with:
-          args: detect --source ${{ inputs.scan-path }} \
-                       --recursive \
-                       --config .github/.gitleaks.toml \
-                       --report-path gitleaks-report.json \
-                       --report-format sarif \
-                       --redact
+        run: |
+          gitleaks detect \
+            --source ${{ inputs.scan-path }} \
+            --recursive \
+            --config ./gitleaks.toml \
+            --report-path results.sarif \
+            --report-format sarif \
+            --redact
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
+      # 3️⃣ Upload SARIF report
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report
-          path: gitleaks-report.json
+          path: results.sarif
 
+      # 4️⃣ Fail job if leaks found
       - name: Fail on leaks
-        if: steps.gitleaks.outcome == 'failure'
+        if: ${{ steps.gitleaks.outcome == 'failure' }}
         run: exit 1
