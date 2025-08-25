@@ -24,14 +24,14 @@ jobs:
       # 2️⃣ Run Gitleaks using centralized config
       - name: Run Gitleaks
         id: gitleaks
-        run: |
-          gitleaks detect \
-            --source ${{ inputs.scan-path }} \
-            --recursive \
-            --config ./gitleaks.toml \
-            --report-path results.sarif \
-            --report-format sarif \
-            --redact
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source ${{ inputs.scan-path }} \
+                       --recursive \
+                       --config ./gitleaks.toml \
+                       --report-path results.sarif \
+                       --report-format sarif \
+                       --redact
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
