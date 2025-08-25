@@ -1,0 +1,30 @@
+name: Gitleaks Scan
+
+on:
+  workflow_call:   # allows other repos to re-use this workflow
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required to scan entire history
+
+      # Run gitleaks
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}   # org-wide secret
+        with:
+          config-path: .github/.gitleaks.toml   # reference to your org-wide rules
+          report-format: json
+          report-path: gitleaks-report.json
+
+      # Upload scan results as artifact
+      - name: Upload Gitleaks Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
