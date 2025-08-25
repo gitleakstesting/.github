@@ -1,19 +1,30 @@
 name: gitleaks
 
 on:
-  workflow_call:   # allows other repos to call this workflow
+  workflow_call:   # Allows other repos to call this workflow
+  workflow_dispatch: # Allows manual run
+  schedule:
+    - cron: "0 4 * * *" # Optional: run daily at 4 AM UTC
 
 jobs:
   scan:
+    name: Run Gitleaks Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0   # fetch full history for complete scanning
 
-      - name: Run Gitleaks Scan
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
-          args: detect --source . --config .gitleaks.toml --no-git
+          args: detect --source . --config .gitleaks.toml --report-path gitleaks-report.json
         env:
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Upload Gitleaks Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
