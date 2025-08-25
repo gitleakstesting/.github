@@ -6,22 +6,20 @@ on:
       scan-path:
         description: "Path to scan with Gitleaks"
         required: false
-        default: "."  # defaults to current directory
-  workflow_dispatch: {}  # manual run
+        type: string
+        default: "."
+  workflow_dispatch: {}
 
 jobs:
   scan:
-    name: Run Gitleaks Scan
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout the target repository fully, including history and submodules
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
 
-      # 2️⃣ Run Gitleaks scan
       - name: Run Gitleaks
         id: gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -35,14 +33,12 @@ jobs:
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
-      # 3️⃣ Upload scan report as artifact
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report
           path: gitleaks-report.json
 
-      # 4️⃣ Fail workflow if leaks found (optional)
       - name: Fail on leaks
         if: steps.gitleaks.outcome == 'failure'
         run: exit 1
