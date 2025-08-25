@@ -11,32 +11,44 @@ on:
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ✅ Install latest gitleaks safely
       - name: Install Gitleaks
         run: |
           VERSION=$(curl -s https://api.github.com/repos/zricethezav/gitleaks/releases/latest | jq -r .tag_name)
           FILE="gitleaks_${VERSION#v}_linux_x64.tar.gz"
-          curl -sSL -o $FILE https://github.com/zricethezav/gitleaks/releases/download/$VERSION/$FILE
+          URL="https://github.com/zricethezav/gitleaks/releases/download/${VERSION}/${FILE}"
+
+          echo "Downloading $URL"
+          curl -sSL -o $FILE $URL
+
+          echo "Extracting $FILE"
           tar -xzf $FILE
+
           sudo mv gitleaks /usr/local/bin/
           gitleaks version
 
-      - name: Run Gitleaks
+      # ✅ Run gitleaks scan
+      - name: Run Gitleaks Scan
         run: |
           gitleaks detect \
             --source . \
-            --config ${{ inputs.config_path }} \
+            --config "${{ inputs.config_path }}" \
             --report-format sarif \
             --report-path results.sarif \
             --exit-code 1
+
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+          GITLEAKS_ENABLE_COMMENTS: true
 
+      # ✅ Upload SARIF results as artifact
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results
+          name: gitleaks-results   # must not have dots in name
           path: results.sarif
