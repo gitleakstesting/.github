@@ -13,38 +13,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
     
-      - name: Download Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@v2
         with:
-          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
-        env:
+          scan-path: .
+          config-path: gitleaks.toml    # your custom rules
+          format: sarif
+          output-path: gitleaks-results.sarif
+          verbose: true
+          no-git: true                   # scan all files, not just git commits
+          redact: true
+          exit-code: 2
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
-           # Step 3: Upload scan report as artifact
-      - name: Upload SARIF as artifact
-        if: always()
+
+      # Step 3: Upload scan report as artifact
+      - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results
-          path: results.sarif
-
-      - name: Upload SARIF to GitHub Security tab
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
-
-      - name: Show Gitleaks results in job summary
-        if: always()
-        run: |
-          echo "## 🔒 Gitleaks Scan Results" >> $GITHUB_STEP_SUMMARY
-          cat results.sarif >> $GITHUB_STEP_SUMMARY
-
-      - name: Fail workflow if leaks were found
-        if: steps.gitleaks.outcome == 'failure'
-        run: |
-          echo "❌ Secrets detected by Gitleaks!"
-          exit 1
+          path: gitleaks-results.sarif
+         
+    
 
 
 
