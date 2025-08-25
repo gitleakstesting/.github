@@ -1,4 +1,5 @@
 name: Reusable Gitleaks Scan
+
 on:
   workflow_call:
     inputs:
@@ -6,38 +7,31 @@ on:
         required: false
         type: string
         default: ".gitleaks.toml"
+
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-    
+
       - name: Run Gitleaks
-        uses: zricethezav/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          scan-path: .
-          config-path: gitleaks.toml    # your custom rules
-          format: sarif
-          output-path: gitleaks-results.sarif
-          verbose: true
-          no-git: true                   # scan all files, not just git commits
-          redact: true
-          exit-code: 2
+          args: detect --source . \
+                      --config ${{ inputs.config_path }} \
+                      --report-format sarif \
+                      --report-path gitleaks-results.sarif \
+                      --redact \
+                      --no-git \
+                      --exit-code 1
+        env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
 
-      # Step 3: Upload scan report as artifact
       - name: Upload SARIF report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results
           path: gitleaks-results.sarif
-         
-    
-
-
-
-
-
-
