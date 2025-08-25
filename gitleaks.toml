@@ -1,14 +1,9 @@
-# AWS Access Key
 [[rules]]
-id = "AWS_ACCESS_KEY"
-description = "AWS Access Key"
-regex = '''AKIA[0-9A-Z]{16}'''
-tags = ["key", "AWS"]
+description = "AWS Access Key ID"
+regex = "(?i)AKIA[0-9A-Z]{16}|CLIA[0-9A-Z]{16}"
+tags = ["aws", "key"]
 
-# AWS Secret Key
 [[rules]]
-id = "AWS_SECRET_KEY"
-description = "AWS Secret Key"
-# Matches the common AWS secret key pattern: 40 alphanumeric / punctuation chars
-regex = '''(?i)aws_secret_access_key.?[:=]\s*([A-Za-z0-9/+=]{40})'''
-tags = ["key", "AWS"]
+description = "AWS Secret Access Key"
+regex = "(?i)aws(.{0,20})?['\"][0-9a-zA-Z/+=]{40}['\"]|rJalsXUtnGEMI/K7MDENG/bPxRfiCYEXAMPLERFAL"
+tags = ["aws", "secret"]
