@@ -17,7 +17,8 @@ jobs:
 
       - name: Install Gitleaks
         run: |
-          curl -sSL https://github.com/zricethezav/gitleaks/releases/latest/download/gitleaks_$(uname -s)_$(uname -m).tar.gz \
+          VERSION=$(curl -s https://api.github.com/repos/zricethezav/gitleaks/releases/latest | jq -r .tag_name)
+          curl -sSL https://github.com/zricethezav/gitleaks/releases/download/$VERSION/gitleaks_${VERSION#v}_linux_x64.tar.gz \
           | tar -xz -C /usr/local/bin gitleaks
 
       - name: Run Gitleaks
@@ -34,5 +35,5 @@ jobs:
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results   # ✅ no dots in artifact name
+          name: gitleaks-results
           path: results.sarif
