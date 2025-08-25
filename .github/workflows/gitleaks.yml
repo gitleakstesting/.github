@@ -22,12 +22,13 @@ jobs:
           GITLEAKS_ENABLE_COMMENTS: true
            # Step 3: Upload scan report as artifact
       - name: Upload SARIF report
+        if: always() # ensure upload even if leaks are found
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results   # ✅ no dots in artifact name
           path: results.sarif
 
-      - name: Show Gitleaks results
+      - name: Show Gitleaks results in summary
         if: always() # run even if gitleaks exits with error
         run: |
           echo "## 🛑 Gitleaks detected secrets 🛑" >> $GITHUB_STEP_SUMMARY
