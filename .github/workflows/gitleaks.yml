@@ -1,4 +1,5 @@
 name: Reusable Gitleaks Scan
+
 on:
   workflow_call:
     inputs:
@@ -6,28 +7,42 @@ on:
         required: false
         type: string
         default: ".gitleaks.toml"
+
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Download Gitleaks
+
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
+          args: detect --source . \
+             --config ${{ inputs.config_path }} \
+             --report-format sarif \
+             --report-path gitleaks-results.sarif \
+             --exit-code 1 
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
-           # Step 3: Upload scan report as artifact
+
       - name: Debug — check SARIF file
         if: always()
         run: ls -lah gitleaks-results.sarif || echo "⚠️ No SARIF file found"
-      - name: Upload SARIF report
+
+      - name: Upload SARIF as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results       # ✅ artifact name (no dot)
-          path: gitleaks-results.sarif # ✅ actual SARIF file path
+          name: gitleaks-results   # ✅ artifact name (no dots)
+          path: gitleaks-results.sarif
 
-         
+      - name: Upload SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks-results.sarif
