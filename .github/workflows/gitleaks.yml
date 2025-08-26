@@ -20,13 +20,16 @@ jobs:
 
       - name: Install Gitleaks
         run: |
-          curl -sSL https://github.com/zricethezav/gitleaks/releases/latest/download/gitleaks_$(uname -s)_x64.tar.gz \
+          version=$(curl -s https://api.github.com/repos/zricethezav/gitleaks/releases/latest \
+            | grep tag_name | cut -d '"' -f 4)
+          echo "Installing Gitleaks $version"
+          curl -sSL "https://github.com/zricethezav/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz" \
           | tar -xz -C /usr/local/bin gitleaks
           gitleaks version
 
       - name: Run Gitleaks
         env:
-          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"   # ✅ add your license here (better from secrets)
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"  # ✅ license from secrets
         run: |
           gitleaks detect \
             --source . \
