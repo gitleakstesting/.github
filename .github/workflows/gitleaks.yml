@@ -9,6 +9,9 @@ on:
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # ✅ needed for SARIF upload
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,6 +27,10 @@ jobs:
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
+
+      - name: Debug — list files
+        if: always()
+        run: ls -lah
 
       - name: Upload SARIF report
         if: always()
