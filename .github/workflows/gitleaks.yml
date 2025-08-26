@@ -13,23 +13,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write   # ✅ needed for SARIF upload
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Install Gitleaks
         run: |
-          version=$(curl -s https://api.github.com/repos/zricethezav/gitleaks/releases/latest \
-            | grep tag_name | cut -d '"' -f 4)
+          version=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
           echo "Installing Gitleaks $version"
-          curl -sSL "https://github.com/zricethezav/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz" \
-          | tar -xz -C /usr/local/bin gitleaks
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz" \
+            -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz -C /usr/local/bin gitleaks
           gitleaks version
 
       - name: Run Gitleaks
         env:
-          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"  # ✅ license from secrets
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
         run: |
           gitleaks detect \
             --source . \
