@@ -22,10 +22,10 @@ jobs:
         uses: gitleaks/gitleaks-action@v2.3.4
         with:
           args: detect --source . \
-             --config ${{ inputs.config_path }} \
-             --report-format sarif \
-             --report-path gitleaks-results.sarif \
-             --exit-code 1 
+                       --config ${{ inputs.config_path }} \
+                       --report-format sarif \
+                       --report-path gitleaks-results.sarif \
+                       --exit-code 1   # 🚨 block pushes if leaks exist
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
           GITLEAKS_ENABLE_COMMENTS: true
@@ -38,8 +38,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results   # ✅ artifact name (no dots)
-          path: gitleaks-results.sarif
+          name: gitleaks-report         # ✅ artifact name, not a file path
+          path: gitleaks-results.sarif  # ✅ actual SARIF file path
 
       - name: Upload SARIF to Code Scanning
         if: always()
