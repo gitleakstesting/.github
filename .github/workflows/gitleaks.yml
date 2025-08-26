@@ -1,5 +1,4 @@
 name: Reusable Gitleaks Scan
-
 on:
   workflow_call:
     inputs:
@@ -7,49 +6,23 @@ on:
         required: false
         type: string
         default: ".gitleaks.toml"
-
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq curl tar
-
-      - name: Install Gitleaks
-        run: |
-          version=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
-          echo "Installing Gitleaks $version"
-          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz" -o gitleaks.tar.gz
-          sudo tar -xzf gitleaks.tar.gz -C /usr/local/bin gitleaks
-          gitleaks version
-
-      - name: Run Gitleaks
+      - name: Download Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.4
+        with:
+          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-        run: |
-          echo "✅ Using config at ${{ inputs.config_path }}"
-          gitleaks detect \
-            --source . \
-            --config ${{ inputs.config_path }} \
-            --report-format sarif \
-            --report-path gitleaks-results.sarif \
-            --exit-code 1   # 🚨 makes workflow fail if leaks are found
-
-      - name: Upload SARIF report (artifact)
-        if: always()
+          GITLEAKS_ENABLE_COMMENTS: true
+           # Step 3: Upload scan report as artifact
+      - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results
           path: gitleaks-results.sarif
-
-      - name: Upload SARIF to Code Scanning
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: gitleaks-results.sarif
+         
