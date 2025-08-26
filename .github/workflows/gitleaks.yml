@@ -6,7 +6,7 @@ on:
       config_path:
         required: false
         type: string
-        default: ".gitleaks.toml"
+        default: ".gitleaks.toml"   # 👈 default points to your config
 
 jobs:
   gitleaks:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Run Gitleaks
         env:
-          GITLEAKS_LICENSE:  "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
         run: |
           gitleaks detect \
             --source . \
