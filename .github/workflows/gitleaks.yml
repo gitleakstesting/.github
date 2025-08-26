@@ -32,7 +32,7 @@ jobs:
 
       - name: Run Gitleaks
         env:
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_LICENSE:  "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
         run: |
           gitleaks detect \
             --source . \
