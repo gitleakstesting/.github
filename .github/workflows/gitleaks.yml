@@ -6,7 +6,7 @@ on:
       config_path:
         required: false
         type: string
-        default: ".gitleaks.toml"
+        default: ".github/gitleaks.toml"  # adjust default to match location
 
 jobs:
   gitleaks:
@@ -14,32 +14,40 @@ jobs:
     permissions:
       contents: read
       security-events: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
-        with:
-          args: detect --source . \
-                       --config ${{ inputs.config_path }} \
-                       --report-format sarif \
-                       --report-path gitleaks-results.sarif \
-                       --exit-code 1   # 🚨 block pushes if leaks exist
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq curl tar
+
+      - name: Fetch external config
+        run: |
+          curl -sSL -o gitleaks.toml \
+            https://raw.githubusercontent.com/gitleakstesting/.github/main/gitleaks.toml
+
+      - name: Run Gitleaks with config
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-          GITLEAKS_ENABLE_COMMENTS: true
+        run: |
+          gitleaks detect \
+            --source . \
+            --config gitleaks.toml \
+            --report-format sarif \
+            --report-path gitleaks-results.sarif \
+            --exit-code 1
 
-      - name: Debug — check SARIF file
+      - name: Debug — list SARIF file
         if: always()
-        run: ls -lah gitleaks-results.sarif || echo "⚠️ No SARIF file found"
+        run: ls -lah gitleaks-results.sarif || echo "⚠️ SARIF not found"
 
       - name: Upload SARIF as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-report         # ✅ artifact name, not a file path
-          path: gitleaks-results.sarif  # ✅ actual SARIF file path
+          name: gitleaks-report
+          path: gitleaks-results.sarif
 
       - name: Upload SARIF to Code Scanning
         if: always()
