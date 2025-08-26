@@ -1,3 +1,5 @@
+name: Reusable Gitleaks Scan
+
 on:
   workflow_call:
     inputs:
@@ -16,23 +18,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Gitleaks
+        run: |
+          curl -sSL https://github.com/zricethezav/gitleaks/releases/latest/download/gitleaks_$(uname -s)_x64.tar.gz \
+          | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
-        with:
-          args: detect --source . \
-                       --config ${{ inputs.config_path }} \
-                       --report-format sarif \
-                       --report-path gitleaks-results.sarif \
-                       --exit-code 1
         env:
-          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-          GITLEAKS_ENABLE_COMMENTS: true
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"   # ✅ add your license here (better from secrets)
+        run: |
+          gitleaks detect \
+            --source . \
+            --config ${{ inputs.config_path }} \
+            --report-format sarif \
+            --report-path gitleaks-results.sarif \
+            --exit-code 1
 
-      - name: Debug — list files
+      - name: Debug — check SARIF file
         if: always()
-        run: ls -lah
+        run: ls -lah gitleaks-results.sarif || echo "⚠️ No SARIF file found"
 
-      - name: Upload SARIF report
+      - name: Upload SARIF report as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
