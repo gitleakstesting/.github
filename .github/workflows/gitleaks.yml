@@ -31,3 +31,9 @@ jobs:
         with:
           name: gitleaks-results
           path: gitleaks-results.sarif
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks-results.sarif
