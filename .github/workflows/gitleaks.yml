@@ -13,33 +13,42 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write   # needed for SARIF upload if you add CodeQL later
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq
+        run: sudo apt-get update && sudo apt-get install -y jq curl tar
 
       - name: Install Gitleaks
         run: |
           version=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
           echo "Installing Gitleaks $version"
-          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz" \
-            -o gitleaks.tar.gz
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz" -o gitleaks.tar.gz
           sudo tar -xzf gitleaks.tar.gz -C /usr/local/bin gitleaks
           gitleaks version
 
       - name: Run Gitleaks
         env:
-          GITLEAKS_LICENSE:  "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"  # ✅ set license in repo/org secrets
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
         run: |
-          gitleaks detect \
-            --source . \
-            --config ${{ inputs.config_path }} \
-            --report-format sarif \
-            --report-path gitleaks-results.sarif \
-            --exit-code 1
+          if [ -f "${{ inputs.config_path }}" ]; then
+            echo "✅ Using config at ${{ inputs.config_path }}"
+            gitleaks detect \
+              --source . \
+              --config ${{ inputs.config_path }} \
+              --report-format sarif \
+              --report-path gitleaks-results.sarif \
+              --exit-code 1
+          else
+            echo "⚠️ Config not found at ${{ inputs.config_path }}, running with defaults"
+            gitleaks detect \
+              --source . \
+              --report-format sarif \
+              --report-path gitleaks-results.sarif \
+              --exit-code 1
+          fi
 
       - name: Debug — check SARIF file
         if: always()
