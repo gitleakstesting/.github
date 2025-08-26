@@ -6,7 +6,7 @@ on:
       config_path:
         required: false
         type: string
-        default: ".github/gitleaks.toml"  # adjust default to match location
+        default: "gitleaks.toml"
 
 jobs:
   gitleaks:
@@ -20,14 +20,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq curl tar
+        run: sudo apt-get update && sudo apt-get install -y curl tar jq
+
+      - name: Install Gitleaks
+        run: |
+          version=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_linux_x64.tar.gz -o gitleaks.tar.gz
+          tar -xvf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
 
       - name: Fetch external config
         run: |
           curl -sSL -o gitleaks.toml \
             https://raw.githubusercontent.com/gitleakstesting/.github/main/gitleaks.toml
 
-      - name: Run Gitleaks with config
+      - name: Run Gitleaks
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
         run: |
@@ -38,9 +45,9 @@ jobs:
             --report-path gitleaks-results.sarif \
             --exit-code 1
 
-      - name: Debug — list SARIF file
+      - name: Debug — check SARIF file
         if: always()
-        run: ls -lah gitleaks-results.sarif || echo "⚠️ SARIF not found"
+        run: ls -lah gitleaks-results.sarif || echo "⚠️ No SARIF file found"
 
       - name: Upload SARIF as artifact
         if: always()
