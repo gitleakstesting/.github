@@ -40,7 +40,9 @@ jobs:
             --redact \
             --report-format sarif \
             --report-path results.sarif \
-            --log-level debug
+            --log-opts=-1
+          echo "=== Gitleaks findings in last commit ==="
+            cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine)"'
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
