@@ -40,6 +40,8 @@ jobs:
             --redact \
             --report-format sarif \
             --report-path results.sarif \
+            --report-format json \
+            --report-path results.json \
             --log-opts=-1
           echo "=== Gitleaks findings in last commit ==="
             cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine)"'
