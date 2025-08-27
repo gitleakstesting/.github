@@ -8,10 +8,10 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.9
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v4
+      - uses: gitleaks/gitleaks-action@v2.3.9
         env:
       
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
