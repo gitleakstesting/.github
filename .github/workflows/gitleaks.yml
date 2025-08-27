@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Org Config
         uses: actions/checkout@v4
         with:
-          repository: your-org/.github   # 👈 central config repo
+          repository: gitleaktesting/.github   # 👈 central config repo
           path: .github-org
           ref: main
 
