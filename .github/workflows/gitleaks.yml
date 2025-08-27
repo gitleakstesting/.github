@@ -23,20 +23,29 @@ jobs:
 
       - name: Run Gitleaks with custom config
         run: |
+          echo "🔍 Running Gitleaks scan..."
           gitleaks detect \
             --source . \
-            --no-git \                # ✅ scans uncommitted files like .env, .ini, etc.
+            --no-git \                       # ✅ scans uncommitted files like .env, .ini, etc.
             --config ${{ inputs.config_path }} \
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --exit-code 1 \
             --no-redact \
-            --verbose
+            --verbose || true
+
+          echo "📄 Gitleaks findings:"
+          cat gitleaks-results.sarif | jq '.runs[0].results[] | {
+            ruleId: .ruleId,
+            file: .locations[0].physicalLocation.artifactLocation.uri,
+            line: .locations[0].physicalLocation.region.startLine,
+            secret: .message.text
+          }'
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results   # ✅ no .sarif extension here
+          name: gitleaks-results   # ✅ artifact name (no .sarif extension)
           path: gitleaks-results.sarif
