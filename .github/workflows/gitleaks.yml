@@ -4,7 +4,7 @@ on:
       config_path:
         required: false
         type: string
-        default: ".gitleaks.toml"
+        default: "gitleaks.toml"
 
 jobs:
   gitleaks:
