@@ -21,7 +21,7 @@ jobs:
         uses: zricethezav/gitleaks-action@v2
         with:
           args: detect --source . \
-                       --config ${{ inputs.config_path }} \
+                       --config "${{ inputs.config_path }}" \
                        --report-format sarif \
                        --report-path gitleaks-results.sarif \
                        --no-git \
