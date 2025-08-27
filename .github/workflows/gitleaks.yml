@@ -1,45 +1,45 @@
 name: Org Secret Scan
 
 on:
-  workflow_call:
+  workflow_call:   # reusable workflow trigger
 
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
+      # Checkout target repo
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Checkout central org config repo
       - name: Checkout Org Config
         uses: actions/checkout@v4
         with:
-          repository: gitleaktesting/.github   # 👈 central config repo
+          repository: gitleaktesting/.github   # 👈 replace with your org config repo
           path: .github-org
           ref: main
 
-      - name: Install Gitleaks
-        run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz | tar -xz
-          sudo mv gitleaks /usr/local/bin/
-
+      # Debug to confirm config exists
       - name: Verify config exists
         run: ls -la .github-org && cat .github-org/gitleaks.toml
 
+      # Run Gitleaks using org config
       - name: Run Gitleaks with Org Config
-        run: |
-          gitleaks detect \
-            --source . \
-            --config .github-org/gitleaks.toml \
-            --report-format sarif \
-            --report-path gitleaks-results.sarif \
-            --no-git \
-            --redact \
-            --verbose \
-            --exit-code 2
+        uses: gitleaks/gitleaks-action@v2.3.9
+        with:
+          args: detect --source . \
+                       --config .github-org/gitleaks.toml \
+                       --report-format sarif \
+                       --report-path gitleaks-results.sarif \
+                       --no-git \
+                       --redact \
+                       --verbose \
+                       --exit-code 2
         env:
           GITLEAKS_LICENSE: FF2062-5126C7-2E2CD7-38B07D-25F736-V3
 
+      # Upload SARIF report for auditing
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
