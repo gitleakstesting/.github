@@ -30,6 +30,7 @@ jobs:
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --exit-code 1 \
+            --no-redact \
             --verbose
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
