@@ -6,25 +6,32 @@ on:
       config_path:
         required: false
         type: string
-        default: ".gitleaks.toml"
+        default: "security-rules/gitleaks.toml"
 
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout repo
+      # Step 1: Checkout the repo being scanned
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Step 2: Install Gitleaks
+      # Step 2: Checkout the central security repo (where rules live)
+      - name: Checkout security-workflows repo
+        uses: actions/checkout@v4
+        with:
+          repository: gitleakstesting/.github
+          path: security-rules
+
+      # Step 3: Install Gitleaks
       - name: Install Gitleaks
         run: |
           curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
           | tar -xz -C /usr/local/bin gitleaks
 
-      # Step 3: Run Gitleaks (last commit only, JSON + SARIF reports)
+      # Step 4: Run Gitleaks (last commit only, JSON + SARIF reports)
       - name: Run Gitleaks
         run: |
           gitleaks detect \
@@ -41,14 +48,14 @@ jobs:
           echo "=== Gitleaks findings in last commit ==="
           if [ -s results.json ]; then
             cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine) | Secret: \(.Secret)"'
-            exit 1  # fail if leaks found
+            exit 1  # fail after printing leaks
           else
             echo "✅ No leaks found in last commit."
           fi
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
-      # Step 4: Upload SARIF to GitHub Security tab
+      # Step 5: Upload SARIF results
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v2
         with:
