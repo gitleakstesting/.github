@@ -13,25 +13,27 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Run Gitleaks scan
-      - name: Run Gitleaks
+      - name: Install Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          args: detect --source . \
-                       --config ${{ inputs.config_path }} \
-                       --report-format sarif \
-                       --report-path gitleaks-results.sarif \
-                       --exit-code 1
+          # no args here
+          report_format: sarif
+          report_path: gitleaks-results.sarif
         env:
-          # License should be stored as an org/repo secret
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-          GITLEAKS_ENABLE_COMMENTS: true
 
-      # Step 3: Upload SARIF report
+      - name: Run Gitleaks with custom config
+        run: |
+          gitleaks detect \
+            --source . \
+            --config "${{ inputs.config_path }}" \
+            --report-format sarif \
+            --report-path gitleaks-results.sarif \
+            --exit-code 1
+
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
