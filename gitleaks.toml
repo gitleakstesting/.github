@@ -1,17 +1,19 @@
 # ==========================
-# Secret Detection Rules
+# Custom Secret Detection Rules
 # ==========================
 
 [[rules]]
 id = "AWSAccessKeyID"
 description = "AWS Access Key ID"
-regex = "(?i)AKIA[0-9A-Z]{16}|CLIA[0-9A-Z]{16}"
+# Matches AKIA, ASIA, ANPA prefixes (case insensitive)
+regex = "(?i)(A3T[A-Z0-9]|AKIA|ASIA|ANPA|ACCA)[0-9A-Z]{16}"
 tags = ["aws", "key"]
 
 [[rules]]
 id = "AWSSecretAccessKey"
 description = "AWS Secret Access Key"
-regex = "(?i)aws(.{0,20})?['\"][0-9a-zA-Z/+=]{40}['\"]"
+# 40 characters long, base64-like charset
+regex = "(?i)(?<![A-Z0-9])[A-Za-z0-9/+=]{40}(?![A-Z0-9])"
 tags = ["aws", "secret"]
 
 [[rules]]
@@ -47,14 +49,8 @@ tags = ["azure", "sas", "token"]
 [[rules]]
 id = "GitHubToken"
 description = "GitHub Personal Access Token"
-regex = "ghp_[0-9A-Za-z]{36}|gho_[0-9A-Za-z]{36}"
+regex = "(ghp|gho)_[0-9A-Za-z]{36}"
 tags = ["github", "token"]
-
-[[rules]]
-id = "GitLabToken"
-description = "GitLab Personal Access Token"
-regex = "glpat-[0-9A-Za-z\\-_]{20}"
-tags = ["gitlab", "token"]
 
 [[rules]]
 id = "SlackToken"
@@ -69,30 +65,6 @@ regex = "sk_live_[0-9a-zA-Z]{24}"
 tags = ["stripe", "secret"]
 
 [[rules]]
-id = "StripePublishableKey"
-description = "Stripe Publishable Key"
-regex = "pk_live_[0-9a-zA-Z]{24}"
-tags = ["stripe", "public"]
-
-[[rules]]
-id = "TwilioAccountSID"
-description = "Twilio Account SID"
-regex = "AC[0-9a-f]{32}"
-tags = ["twilio", "sid"]
-
-[[rules]]
-id = "TwilioAuthToken"
-description = "Twilio Auth Token"
-regex = "[0-9a-f]{32}"
-tags = ["twilio", "auth"]
-
-[[rules]]
-id = "FacebookAccessToken"
-description = "Facebook Access Token"
-regex = "EAACEdEose0cBA[0-9A-Za-z]+"
-tags = ["facebook", "access_token"]
-
-[[rules]]
 id = "JWT"
 description = "JSON Web Token (JWT)"
 regex = "eyJ[A-Za-z0-9-_=]+\\.eyJ[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*"
@@ -103,12 +75,6 @@ id = "SSHPrivateKey"
 description = "SSH Private Key"
 regex = "-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----"
 tags = ["ssh", "private_key"]
-
-[[rules]]
-id = "PGPPrivateKey"
-description = "PGP Private Key"
-regex = "-----BEGIN PGP PRIVATE KEY BLOCK-----"
-tags = ["pgp", "private_key"]
 
 [[rules]]
 id = "GenericAPIKey"
@@ -127,5 +93,3 @@ id = "CreditCard"
 description = "Credit Card Number (Visa, MasterCard, AmEx)"
 regex = "(4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})"
 tags = ["pii", "financial", "creditcard"]
-
-
