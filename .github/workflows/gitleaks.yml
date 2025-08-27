@@ -14,26 +14,34 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
+      # Checkout the repo being scanned
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      # Checkout the central security repo where the TOML lives
+      - name: Checkout security-workflows repo
+        uses: actions/checkout@v3
+        with:
+          repository: gitleakstesting/.github
+          path: security-rules
 
       - name: Install Gitleaks
         run: |
           curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
           | tar -xz -C /usr/local/bin gitleaks
 
-      - name: Run Gitleaks with custom config
+      - name: Run Gitleaks with central config
         run: |
           gitleaks detect \
             --source . \
-            --config ${{ inputs.config_path }} \
+            --config security-rules/.github/gitleaks.toml \
             --exit-code 1 \
             --redact \
             --report-format sarif \
             --report-path results.sarif
         env:
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v2
