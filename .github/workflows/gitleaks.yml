@@ -20,39 +20,68 @@ jobs:
           curl -sSL https://github.com/zricethezav/gitleaks/releases/download/v8.16.1/gitleaks_8.16.1_linux_x64.tar.gz \
             | tar -xz -C /usr/local/bin gitleaks
 
-      - name: Run Gitleaks with custom config
+      # 1️⃣ Scan git history (commits)
+      - name: Run Gitleaks on git history
         run: |
-          echo "🔍 Running Gitleaks scan..."
+          echo "🔍 Scanning Git history..."
+          set +e
+          gitleaks detect \
+            --source . \
+            --config ${{ inputs.config_path }} \
+            --report-format sarif \
+            --report-path gitleaks-history.sarif \
+            --exit-code 1 \
+            --verbose --no-banner --redact=false
+          EXIT_CODE=$?
+          set -e
+
+          echo "📄 Gitleaks history findings:"
+          if [ -f gitleaks-history.sarif ]; then
+            jq '.runs[0].results[] | {
+              ruleId: .ruleId,
+              file: .locations[0].physicalLocation.artifactLocation.uri,
+              line: .locations[0].physicalLocation.region.startLine,
+              secret: .message.text
+            }' gitleaks-history.sarif || echo "No results in SARIF"
+          fi
+          exit $EXIT_CODE
+        env:
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+
+      # 2️⃣ Scan working directory files (like .env, secrets.ini, etc.)
+      - name: Run Gitleaks on current files
+        run: |
+          echo "🔍 Scanning current files..."
           set +e
           gitleaks detect \
             --source . \
             --no-git \
             --config ${{ inputs.config_path }} \
             --report-format sarif \
-            --report-path gitleaks-results.sarif \
+            --report-path gitleaks-files.sarif \
             --exit-code 1 \
-            --verbose
+            --verbose --no-banner --redact=false
           EXIT_CODE=$?
           set -e
 
-          echo "📄 Gitleaks findings:"
-          if [ -f gitleaks-results.sarif ]; then
+          echo "📄 Gitleaks file findings:"
+          if [ -f gitleaks-files.sarif ]; then
             jq '.runs[0].results[] | {
               ruleId: .ruleId,
               file: .locations[0].physicalLocation.artifactLocation.uri,
               line: .locations[0].physicalLocation.region.startLine,
               secret: .message.text
-            }' gitleaks-results.sarif || echo "No results in SARIF"
-          else
-            echo "⚠️ No SARIF report generated!"
+            }' gitleaks-files.sarif || echo "No results in SARIF"
           fi
-
           exit $EXIT_CODE
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
-      - name: Upload SARIF report
+      # 3️⃣ Upload reports as artifacts
+      - name: Upload SARIF reports
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results
-          path: gitleaks-results.sarif
+          path: |
+            gitleaks-history.sarif
+            gitleaks-files.sarif
