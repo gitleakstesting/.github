@@ -1,5 +1,4 @@
 name: Reusable Gitleaks Scan
-
 on:
   workflow_call:
     inputs:
@@ -7,28 +6,20 @@ on:
         required: false
         type: string
         default: ".gitleaks.toml"
-
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install Gitleaks
-        run: |
-          curl -sSL https://github.com/zricethezav/gitleaks/releases/download/v8.16.1/gitleaks_8.16.1_linux_x64.tar.gz \
-            | tar -xz -C /usr/local/bin gitleaks
-
-      - name: Run Gitleaks with custom config
-        run: |
-          gitleaks detect \
-            --source . \
-            --config ${{ inputs.config_path }} \
-            --report-format sarif \
-            --report-path gitleaks-results.sarif \
-            --exit-code 1
-
+      - name: Download Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.4
+        with:
+          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
+        env:
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+          GITLEAKS_ENABLE_COMMENTS: true
+           # Step 3: Upload scan report as artifact
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
