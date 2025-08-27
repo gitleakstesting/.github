@@ -1,13 +1,8 @@
-name: Reusable Gitleaks Scan
+name: Gitleaks Scan
 
 on:
-  workflow_call:
-    inputs:
-      config_path:
-        description: "Path to Gitleaks config file"
-        required: false
-        type: string
-        default: ".gitleaks.toml"
+  push:
+  pull_request:
 
 jobs:
   gitleaks:
@@ -17,19 +12,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
-        with:
-          # no args here
-          report_format: sarif
-          report_path: gitleaks-results.sarif
-        env:
-          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+        run: |
+          curl -sSL https://github.com/zricethezav/gitleaks/releases/download/v8.16.1/gitleaks_8.16.1_linux_x64.tar.gz \
+            | tar -xz -C /usr/local/bin gitleaks
 
       - name: Run Gitleaks with custom config
         run: |
           gitleaks detect \
             --source . \
-            --config "${{ inputs.config_path }}" \
+            --config .gitleaks.toml \
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --exit-code 1
