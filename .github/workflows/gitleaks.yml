@@ -1,19 +1,17 @@
-name: gitleaks
+# .github/workflows/secret-scan.yml
+name: Org Secret Scan
+
 on:
-  pull_request:
-  push:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *" # run once a day at 4 AM
+  workflow_call:
+
 jobs:
-  scan:
-    name: gitleaks
+  gitleaks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2.3.9
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2.3.9
+      - uses: gitleaks/gitleaks-action@v2
         env:
-          GITLEAKS_LICENSE: FF2062-5126C7-2E2CD7-38B07D-25F736-V3 
-         
+      
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
