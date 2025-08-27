@@ -2,9 +2,9 @@ on:
   workflow_call:
     inputs:
       config_path:
-        required: true
+        required: false
         type: string
-        default: gitleaks.toml
+        default: ".gitleaks.toml"
 
 jobs:
   gitleaks:
