@@ -1,4 +1,3 @@
-# .github/workflows/secret-scan.yml
 name: Org Secret Scan
 
 on:
@@ -8,19 +7,20 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: zricethezav/gitleaks-action@v2
+      - name: Run Gitleaks with Custom Config
+        uses: zricethezav/gitleaks-action@v2
         with:
-          scan-path: .
-          config-path: gitleaks.toml    # your custom rules
-          format: sarif
-          output-path: gitleaks-results.sarif
-          verbose: true
-          no-git: true                   # scan all files, not just git commits
-          redact: true
-          exit-code: 2
+          args: detect --source . \
+                       --config-path gitleaks.toml \
+                       --format sarif \
+                       --report-path gitleaks-results.sarif \
+                       --no-git \
+                       --redact \
+                       --verbose \
+                       --exit-code 2
         env:
-      
+          
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
