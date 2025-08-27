@@ -113,13 +113,13 @@ tags = ["pgp", "private_key"]
 [[rules]]
 id = "GenericAPIKey"
 description = "Generic API Key"
-regex = "(?i)(api[_-]?key|secret)[\\s:=]+['\\\"][0-9A-Za-z\\-_=]{20,64}['\\\"]"
+regex = "(?i)(api[_-]?key|secret)[\\s:=]+['\\\"]?[0-9A-Za-z\\-_=]{20,64}['\\\"]?"
 tags = ["generic", "api", "key"]
 
 [[rules]]
 id = "GenericPassword"
 description = "Hardcoded Password"
-regex = "(?i)(password|passwd|pwd)[\\s:=]+['\\\"][^'\\\"]{8,}['\\\"]"
+regex = "(?i)(password|passwd|pwd)[\\s:=]+['\\\"]?[^'\\\"]{8,}['\\\"]?"
 tags = ["generic", "password"]
 
 # Optional - can be noisy
