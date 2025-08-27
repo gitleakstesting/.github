@@ -39,7 +39,8 @@ jobs:
             --exit-code 1 \
             --redact \
             --report-format sarif \
-            --report-path results.sarif
+            --report-path results.sarif \
+            --log-opts=-1
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
