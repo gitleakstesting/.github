@@ -15,17 +15,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
-        with:
-          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path gitleaks-results.sarif --exit-code 1
+      # Install gitleaks manually so you can control args
+      - name: Install Gitleaks
+        run: |
+          curl -sSL https://github.com/zricethezav/gitleaks/releases/download/v8.16.1/gitleaks_8.16.1_linux_x64.tar.gz \
+            | tar -xz -C /usr/local/bin gitleaks
+
+      - name: Run Gitleaks with custom config
+        run: |
+          gitleaks detect \
+            --source . \
+            --config ${{ inputs.config_path }} \
+            --report-format sarif \
+            --report-path gitleaks-results.sarif \
+            --exit-code 1
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-          GITLEAKS_ENABLE_COMMENTS: true
 
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results
+          name: gitleaks-results   # ✅ no ".sarif" here
           path: gitleaks-results.sarif
-
