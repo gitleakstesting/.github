@@ -1,8 +1,12 @@
-name: Gitleaks Scan
+name: Reusable Gitleaks Scan
 
 on:
-  push:
-  pull_request:
+  workflow_call:
+    inputs:
+      config_path:
+        required: false
+        type: string
+        default: ".gitleaks.toml"
 
 jobs:
   gitleaks:
@@ -20,7 +24,7 @@ jobs:
         run: |
           gitleaks detect \
             --source . \
-            --config .gitleaks.toml \
+            --config ${{ inputs.config_path }} \
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --exit-code 1
