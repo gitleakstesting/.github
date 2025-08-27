@@ -1,27 +1,14 @@
-name: Reusable Gitleaks Scan
-on:
-  workflow_call:
-    inputs:
-      config_path:
-        required: false
-        type: string
-        default: ".gitleaks.toml"
+name: gitleaks
+on: [pull_request, push, workflow_dispatch]
 jobs:
-  gitleaks:
+  scan:
+    name: gitleaks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Download Gitleaks
-        uses: gitleaks/gitleaks-action@v2.3.4
+      - uses: actions/checkout@v3
         with:
-          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-          GITLEAKS_ENABLE_COMMENTS: true
-           # Step 3: Upload scan report as artifact
-      - name: Upload SARIF report
-        uses: actions/upload-artifact@v4
-        with:
-          name: gitleaks-results
-          path: gitleaks-results.sarif
