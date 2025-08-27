@@ -2,12 +2,6 @@ name: Org Secret Scan
 
 on:
   workflow_call:
-    inputs:
-      config_path:
-        description: "Path to gitleaks config file"
-        required: false
-        type: string
-        default: "gitleaks.toml"   # you can override when calling
 
 jobs:
   gitleaks:
@@ -17,28 +11,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout Org Config
+        uses: actions/checkout@v4
+        with:
+          repository: your-org/.github   # 👈 central config repo
+          path: .github-org
+          ref: main
+
       - name: Install Gitleaks
         run: |
           curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz | tar -xz
           sudo mv gitleaks /usr/local/bin/
 
       - name: Verify config exists
-        run: |
-          echo "Looking for config at: ${{ inputs.config_path }}"
-          ls -la .
-          if [ -f "${{ inputs.config_path }}" ]; then
-            echo "✅ Config file found"
-            cat "${{ inputs.config_path }}"
-          else
-            echo "❌ Config file not found"
-            exit 1
-          fi
+        run: ls -la .github-org && cat .github-org/gitleaks.toml
 
-      - name: Run Gitleaks with Custom Config
+      - name: Run Gitleaks with Org Config
         run: |
           gitleaks detect \
             --source . \
-            --config ${{ inputs.config_path }} \
+            --config .github-org/gitleaks.toml \
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --no-git \
