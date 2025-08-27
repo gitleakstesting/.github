@@ -25,3 +25,4 @@ jobs:
         with:
           name: gitleaks-results
           path: gitleaks-results.sarif
+         
