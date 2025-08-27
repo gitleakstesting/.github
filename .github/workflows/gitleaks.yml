@@ -15,7 +15,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Install gitleaks manually so you can control args
       - name: Install Gitleaks
         run: |
           curl -sSL https://github.com/zricethezav/gitleaks/releases/download/v8.16.1/gitleaks_8.16.1_linux_x64.tar.gz \
@@ -24,28 +23,33 @@ jobs:
       - name: Run Gitleaks with custom config
         run: |
           echo "🔍 Running Gitleaks scan..."
+          set +e
           gitleaks detect \
             --source . \
-            --no-git \                       # ✅ scans uncommitted files like .env, .ini, etc.
+            --no-git \
             --config ${{ inputs.config_path }} \
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --exit-code 1 \
             --no-redact \
-            --verbose || true
+            --verbose
+          EXIT_CODE=$?
+          set -e
 
           echo "📄 Gitleaks findings:"
-          cat gitleaks-results.sarif | jq '.runs[0].results[] | {
+          jq '.runs[0].results[] | {
             ruleId: .ruleId,
             file: .locations[0].physicalLocation.artifactLocation.uri,
             line: .locations[0].physicalLocation.region.startLine,
             secret: .message.text
-          }'
+          }' gitleaks-results.sarif || echo "No results"
+
+          exit $EXIT_CODE   # ✅ re-fail if leaks found
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results   # ✅ artifact name (no .sarif extension)
+          name: gitleaks-results
           path: gitleaks-results.sarif
