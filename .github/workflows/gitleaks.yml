@@ -5,7 +5,7 @@ on:
     inputs:
       config_path:
         type: string
-        default: ".github/gitleaks.toml"
+        default: ".gitleaks.toml"
     secrets:
       GITLEAKS_LICENSE:
         required: true
