@@ -35,7 +35,7 @@ jobs:
         run: |
           gitleaks detect \
             --source . \
-            --config gitleakstesting/.github/gitleaks.toml \
+            --config security-rules/gitleaks.toml \
             --exit-code 1 \
             --redact \
             --report-format sarif \
