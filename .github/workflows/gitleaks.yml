@@ -33,22 +33,25 @@ jobs:
 
       - name: Run Gitleaks with central config
         run: |
+          # Run Gitleaks but don’t fail immediately
           gitleaks detect \
             --source . \
             --config security-rules/gitleaks.toml \
-            --exit-code 1 \
+            --exit-code 0 \
             --redact \
             --report-format sarif \
             --report-path results.sarif \
             --report-format json \
             --report-path results.json \
             --log-opts=-1
-           echo "=== Gitleaks findings in last commit ==="
-              if [ -s results.json ]; then
-             cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine) | Secret: \(.Secret)"'
-               else
-           echo "No leaks found in last commit."
-           fi
+
+          echo "=== Gitleaks findings in last commit ==="
+          if [ -s results.json ]; then
+            cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine) | Secret: \(.Secret)"'
+            exit 1  # Fail after printing leaks
+          else
+            echo "No leaks found in last commit."
+          fi
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
