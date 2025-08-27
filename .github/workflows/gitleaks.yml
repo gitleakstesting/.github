@@ -1,5 +1,11 @@
 on:
   workflow_call:
+    inputs:
+      config_path:
+        required: true
+        type: string
+        default: ".gitleaks.toml"
+
 
 jobs:
   gitleaks:
@@ -16,7 +22,7 @@ jobs:
         uses: zricethezav/gitleaks-action@v2
         with:
           args: detect --source . \
-                       --config-path ./gitleaks.toml \
+                       --config-path ${{ inputs.config_path }} \
                        --format sarif \
                        --report-path gitleaks-results.sarif \
                        --no-git \
