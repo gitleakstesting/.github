@@ -18,7 +18,7 @@ jobs:
         run: ls -R .github
 
       - name: Run Gitleaks with Custom Config
-        uses: zricethezav/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2.3.9
         with:
           args: detect --source . \
                        --config "${{ inputs.config_path }}" \
