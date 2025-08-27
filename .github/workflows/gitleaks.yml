@@ -1,73 +1,27 @@
-name: gitleaks-scan
-
+name: Reusable Gitleaks Scan
 on:
   workflow_call:
     inputs:
       config_path:
+        required: false
         type: string
-        default: "security-rules/gitleaks.toml"
-    secrets:
-      GITLEAKS_LICENSE:
-        required: true
-
-permissions:
-  contents: read
-  security-events: write   # ✅ needed for SARIF upload
-
+        default: ".gitleaks.toml"
 jobs:
-  scan:
+  gitleaks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          fetch-depth: 0
-
-      - name: Checkout security-workflows repo
-        uses: actions/checkout@v3
-        with:
-          repository: gitleakstesting/.github
-          path: security-rules
-
-      - name: Install Gitleaks
-        run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
-          | tar -xz -C /usr/local/bin gitleaks
-
-      - name: Run Gitleaks (JSON for logs)
-        run: |
-          gitleaks detect \
-            --source . \
-            --config security-rules/gitleaks.toml \
-            --exit-code 0 \
-            --redact \
-            --report-format json \
-            --report-path results.json \
-            --log-opts=-1
-
-          echo "=== Gitleaks findings in last commit ==="
-          if [ -s results.json ]; then
-            cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine) | Secret: \(.Secret)"'
-            exit 1
-          else
-            echo "✅ No leaks found in last commit."
-          fi
+          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-
-      - name: Run Gitleaks (SARIF for upload)
-        run: |
-          gitleaks detect \
-            --source . \
-            --config security-rules/gitleaks.toml \
-            --exit-code 0 \
-            --redact \
-            --report-format sarif \
-            --report-path results.sarif \
-            --log-opts=-1
-        env:
-          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
-
-      - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v3
+          GITLEAKS_ENABLE_COMMENTS: true
+           # Step 3: Upload scan report as artifact
+      - name: Upload SARIF report
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: results.sarif
+          name: gitleaks-results
+          path: gitleaks-results.sarif
