@@ -31,20 +31,23 @@ jobs:
             --report-format sarif \
             --report-path gitleaks-results.sarif \
             --exit-code 1 \
-            --no-redact \
             --verbose
           EXIT_CODE=$?
           set -e
 
           echo "📄 Gitleaks findings:"
-          jq '.runs[0].results[] | {
-            ruleId: .ruleId,
-            file: .locations[0].physicalLocation.artifactLocation.uri,
-            line: .locations[0].physicalLocation.region.startLine,
-            secret: .message.text
-          }' gitleaks-results.sarif || echo "No results"
+          if [ -f gitleaks-results.sarif ]; then
+            jq '.runs[0].results[] | {
+              ruleId: .ruleId,
+              file: .locations[0].physicalLocation.artifactLocation.uri,
+              line: .locations[0].physicalLocation.region.startLine,
+              secret: .message.text
+            }' gitleaks-results.sarif || echo "No results in SARIF"
+          else
+            echo "⚠️ No SARIF report generated!"
+          fi
 
-          exit $EXIT_CODE   # ✅ re-fail if leaks found
+          exit $EXIT_CODE
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
