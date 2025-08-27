@@ -130,5 +130,8 @@ regex = "(4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})"
 tags = ["pii", "financial", "creditcard"]
 
 [allowlist]
-  description = "Disable built-in rules"
+  description = "Custom rules only"
+  paths = []
+  commits = []
+  regexes = []
   stopwords = []
