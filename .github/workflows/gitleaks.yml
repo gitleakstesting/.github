@@ -5,7 +5,7 @@ on:
     inputs:
       config_path:
         type: string
-        default: ".gitleaks.toml"
+        default: "security-rules/gitleaks.toml"
     secrets:
       GITLEAKS_LICENSE:
         required: true
@@ -18,12 +18,10 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repo being scanned
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Checkout the central security repo where the TOML lives
       - name: Checkout security-workflows repo
         uses: actions/checkout@v3
         with:
@@ -35,16 +33,13 @@ jobs:
           curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
           | tar -xz -C /usr/local/bin gitleaks
 
-      - name: Run Gitleaks with central config
+      - name: Run Gitleaks (JSON for logs)
         run: |
-          # Run gitleaks against last commit, export both SARIF + JSON
           gitleaks detect \
             --source . \
             --config security-rules/gitleaks.toml \
-            --exit-code 0 \   # don’t fail immediately
+            --exit-code 0 \
             --redact \
-            --report-format sarif \
-            --report-path results.sarif \
             --report-format json \
             --report-path results.json \
             --log-opts=-1
@@ -52,10 +47,23 @@ jobs:
           echo "=== Gitleaks findings in last commit ==="
           if [ -s results.json ]; then
             cat results.json | jq -r '.[] | "Rule: \(.RuleID) | File: \(.File) | Line: \(.StartLine) | Secret: \(.Secret)"'
-            exit 1   # ✅ fail after printing leaks
+            exit 1
           else
             echo "✅ No leaks found in last commit."
           fi
+        env:
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+
+      - name: Run Gitleaks (SARIF for upload)
+        run: |
+          gitleaks detect \
+            --source . \
+            --config security-rules/gitleaks.toml \
+            --exit-code 0 \
+            --redact \
+            --report-format sarif \
+            --report-path results.sarif \
+            --log-opts=-1
         env:
           GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
 
