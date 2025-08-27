@@ -6,7 +6,6 @@ on:
         type: string
         default: ".gitleaks.toml"
 
-
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
@@ -22,13 +21,12 @@ jobs:
         uses: zricethezav/gitleaks-action@v2
         with:
           args: detect --source . \
-                       --config-path ${{ inputs.config_path }} \
-                       --format sarif \
+                       --config ${{ inputs.config_path }} \
+                       --report-format sarif \
                        --report-path gitleaks-results.sarif \
                        --no-git \
                        --redact \
                        --verbose \
                        --exit-code 2
         env:
-          
           GITLEAKS_LICENSE: FF2062-5126C7-2E2CD7-38B07D-25F736-V3
