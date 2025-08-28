@@ -1,45 +1,25 @@
-name: Org Secret Scan
-
+name: Reusable Gitleaks Scan
 on:
-  workflow_call:   # reusable workflow trigger
-
+  workflow_call:
+    inputs:
+      config_path:
+        required: false
+        type: string
+        default: ".gitleaks.toml"
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-      # Checkout target repo
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Checkout central org config repo
-      - name: Checkout Org Config
+      - name: Checkout code
         uses: actions/checkout@v4
+      - name: Download Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.4
         with:
-          repository: gitleaktesting/.github   # 👈 replace with your org config repo
-          path: .github-org
-          ref: main
-
-      # Debug to confirm config exists
-      - name: Verify config exists
-        run: ls -la .github-org && cat .github-org/gitleaks.toml
-
-      # Run Gitleaks using org config
-      - name: Run Gitleaks with Org Config
-        uses: gitleaks/gitleaks-action@v2.3.9
-        with:
-          args: detect --source . \
-                       --config .github-org/gitleaks.toml \
-                       --report-format sarif \
-                       --report-path gitleaks-results.sarif \
-                       --no-git \
-                       --redact \
-                       --verbose \
-                       --exit-code 2
+          args: detect --source . --config ${{ inputs.config_path }} --report-format sarif --report-path results.sarif --exit-code 1
         env:
-          GITLEAKS_LICENSE: FF2062-5126C7-2E2CD7-38B07D-25F736-V3
-
-      # Upload SARIF report for auditing
+          GITLEAKS_LICENSE: "FF2062-5126C7-2E2CD7-38B07D-25F736-V3"
+          GITLEAKS_ENABLE_COMMENTS: true
+           # Step 3: Upload scan report as artifact
       - name: Upload SARIF report
         uses: actions/upload-artifact@v4
         with:
